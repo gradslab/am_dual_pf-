@@ -1,0 +1,55 @@
+{
+ "figs": [
+  {
+   "file": "figs/W_nominal.png",
+   "MB": 0.16
+  },
+  {
+   "file": "figs/W_relaxed.png",
+   "MB": 0.24
+  },
+  {
+   "file": "figs/W_interval.png",
+   "MB": 0.09
+  },
+  {
+   "file": "figs/W_actuator.png",
+   "MB": 0.08
+  },
+  {
+   "file": "figs/W_cascade.png",
+   "MB": 0.11
+  },
+  {
+   "file": "figs/W_window.png",
+   "MB": 0.09
+  },
+  {
+   "file": "figs/W_sampling.png",
+   "MB": 0.09
+  },
+  {
+   "file": "figs/W_rate.png",
+   "MB": 0.19
+  },
+  {
+   "file": "figs/W_mismatch.png",
+   "MB": 0.19
+  },
+  {
+   "file": "figs/concept.png",
+   "MB": 0.15
+  }
+ ],
+ "anim": {
+  "nominal_orbit.mp4": 3.24,
+  "nominal_side.mp4": 0.65,
+  "proposed_side.mp4": 0.89,
+  "proposed_orbit.mp4": 4.01,
+  "cascade_side.mp4": 1.09,
+  "cascade_orbit.mp4": 5.63,
+  "nominal_switch_side.mp4": 0.37,
+  "proposed_side.gif": 0.72,
+  "nominal_side.gif": 0.58
+ }
+}

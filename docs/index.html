@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dual Path Following for an Aerial Manipulator</title>
+<meta name="description" content="Simulation study for dual path following of a quadrotor with a 3-DOF arm under state and input constraints via transverse feedback linearization.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+<script>
+window.MathJax = {tex:{inlineMath:[["\\(","\\)"]]}, svg:{fontCache:"global"}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="mark">Dual path following &middot; aerial manipulator</span>
+  <span class="spacer"></span>
+  <nav>
+    <a href="#gallery">Animations</a>
+    <a href="#relaxed">Incompatible speeds</a>
+    <a href="#comparison">Comparison</a>
+    <a href="#postures">Postures</a>
+    <a href="#mismatch">Mismatch</a>
+    <a href="#parameters">Parameters</a>
+    <a href="#reproduce">Reproduce</a>
+  </nav>
+  <button id="theme" class="btn" type="button" aria-label="Switch colour theme">Theme</button>
+</header>
+
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-h">On this page</div>
+    <ol>
+      <li><a href="#gallery">Animations</a></li>
+      <li><a href="#nominal">The nominal run</a></li>
+      <li><a href="#relaxed">Incompatible speed references</a></li>
+      <li><a href="#comparison">Against a cascade and the nominal controller</a></li>
+      <li><a href="#feasibility">Feasibility margins</a></li>
+      <li><a href="#postures">Postures compatible with both paths</a></li>
+      <li><a href="#rate">Controller rate</a></li>
+      <li><a href="#mismatch">Model mismatch</a></li>
+      <li><a href="#parameters">Parameters</a></li>
+      <li><a href="#reproduce">Reproducing this</a></li>
+      <li><a href="#cite">Citation</a></li>
+    </ol>
+  </aside>
+  <main>
+
+  <section class="hero">
+    <div class="eyebrow">Supplementary simulation study</div>
+    <h1>Dual Path Following for an Aerial Manipulator Under State and Input Constraints via Transverse Feedback Linearization</h1>
+    <p class="byline">Hamza Tariq and Adeel Akhtar
+      <span class="aff">GRaDS Lab, New Jersey Institute of Technology</span></p>
+    <p class="lede">A quadrotor carries a 3-DOF arm. The center of mass of the combined system must follow one
+      path and the end effector must follow a second path. The controller keeps both paths as hard constraints
+      and gives up only the speed of the end effector along its path. This page carries the animations behind
+      the figures of the paper, the complete controller settings, a run at 1&nbsp;kHz, a study of the postures
+      compatible with both paths, a study of model mismatch, and everything needed to reproduce them.</p>
+    <div class="buttons">
+      <a class="btn primary" href="https://github.com/gradslab/am_dual_pf-">Code and data</a>
+      <a class="btn" href="#comparison">Comparison</a>
+      <a class="btn" href="#reproduce">Reproduce the figures</a>
+    </div>
+  </section>
+
+  <section class="sec" id="gallery">
+    <div class="sec-head">
+      <span class="sec-tag">Animations</span>
+      <h2>Incompatible speed references, resolved through the end-effector speed</h2>
+      <p>Rendered in Drake from the logged run. A Skydio X2 carries an OpenMANIPULATOR-X arm mounted upside
+      down below the airframe. The blue dots are the vehicle path of the center of mass and the red dots are
+      the end-effector path. Both points start off their paths. At t&nbsp;=&nbsp;15&nbsp;s the
+      end-effector speed reference is raised from 0.25 to 0.42&nbsp;rad/s while the vehicle
+      speed reference is unchanged. The arm stretches until the singularity barrier becomes active at
+      t&nbsp;=&nbsp;16.26&nbsp;s. From then on the end effector is slowed back to the vehicle speed and
+      both points stay on their paths.</p>
+    </div>
+<div class="grid2"><div class="card media"><span class="pill neutral">side on</span><div class="plate"><video src="anim/proposed_side.mp4" poster="anim/proposed_side.jpg" autoplay loop muted playsinline preload="metadata" aria-label="proposed controller, side view"></video></div></div><div class="card media"><span class="pill neutral">orbit</span><div class="plate"><video src="anim/proposed_orbit.mp4" poster="anim/proposed_orbit.jpg" autoplay loop muted playsinline preload="metadata" aria-label="proposed controller, orbiting camera"></video></div></div></div>
+    <div class="sec-head" style="margin-top:2.6rem">
+      <h2>The nominal run</h2>
+      <p>Equal speed references of 0.25&nbsp;rad/s on both paths, from the same off-path start. No
+      constraint becomes active, so the controller applies the transverse feedback linearizing input unchanged.</p>
+    </div>
+<div class="grid2"><div class="card media"><span class="pill neutral">orbit</span><div class="plate"><video src="anim/nominal_orbit.mp4" poster="anim/nominal_orbit.jpg" autoplay loop muted playsinline preload="metadata" aria-label="nominal run, orbiting camera"></video></div></div><div class="card media"><span class="pill neutral">side on</span><div class="plate"><video src="anim/nominal_side.mp4" poster="anim/nominal_side.jpg" autoplay loop muted playsinline preload="metadata" aria-label="nominal run, side view"></video></div></div></div>
+    <div class="stats" style="margin-top:2.2rem">
+      <div class="stat"><div class="n">2.8 mm</div>
+        <div class="k">largest distance of the end effector to its path while the singularity row becomes active,
+          against 6.6&nbsp;m for the safety-filtered cascade at the end of its run</div></div>
+      <div class="stat"><div class="n">1.04 rad/s<sup>2</sup></div>
+        <div class="k">largest slack on the end-effector speed row, the only row that is ever relaxed</div></div>
+      <div class="stat"><div class="n">2.8&times;10<sup>-6</sup> m<sup>3</sup></div>
+        <div class="k">largest violation of the singularity margin \(\epsilon_J\) over the run, the sampled-data residual of the barrier</div></div>
+      <div class="stat"><div class="n">0</div>
+        <div class="k">steps at which the reduced scalar program was infeasible, in every run with the exact model</div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="nominal">
+    <div class="sec-head">
+      <span class="sec-tag">Nominal run</span>
+      <h2>The nominal run</h2>
+      <p>The vehicle path is a horizontal circle of radius 1.2&nbsp;m with a wavy altitude
+      \(z = 1.6 + 0.1\sin 2\lambda\), with \(\lambda\) the polar angle. The end-effector path is the
+      circle of the same radius below it with a finer scalloped altitude
+      \(z = 1.42 + 0.06\sin(2\lambda + 0.8) + 0.03\sin 8\lambda\). Speeds are rates of the polar angle, and
+      0.25&nbsp;rad/s is 0.3&nbsp;m/s. The run starts 0.4&nbsp;m outside and
+      0.25&nbsp;m below the vehicle path with a heading error of 0.35&nbsp;rad. The
+      distances \(d_c\) and \(d_e\) are measured to the points of the paths at the same polar angle, which bounds
+      the distances to the paths from above.</p>
+    </div>
+      <figure class="figblock">
+        <div class="plate"><img src="figs/W_nominal.png" alt="" loading="lazy"></div>
+        <figcaption class="cap"><b>Nominal dual path following from an off-path initial condition.</b> Left: center of mass (blue), end effector (red) and the two paths (wide light lines). The dots mark the start. Right: distances to the paths, the two along-path speeds and the heading error.</figcaption>
+      </figure>
+    <div class="prose">
+      <p>From \(d_c(0) = 0.47\)&nbsp;m and \(d_e(0) = 0.53\)&nbsp;m both distances decay exponentially and fall
+      below 1&nbsp;mm after 5.8&nbsp;s. For the rest of the 28&nbsp;s run, \(d_c\) stays below
+      0.036&nbsp;mm and \(d_e\) below 1.00&nbsp;mm. These residuals come from the zero-order hold of
+      the controller at 400&nbsp;Hz, since in continuous time the hard rows keep the transverse coordinates at zero.
+      The speeds settle in [0.247, 0.251] and [0.249, 0.251]&nbsp;rad/s after 6&nbsp;s,
+      and the heading error stays below 1.2&times;10<sup>-5</sup>&nbsp;rad after 10&nbsp;s. The thrust stays within
+      [18.53, 19.53]&nbsp;N and the tilt below 2.7&nbsp;degrees.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="relaxed">
+    <div class="sec-head">
+      <span class="sec-tag">Incompatible speeds</span>
+      <h2>Incompatible speed references</h2>
+      <p>The same start and gains. At t&nbsp;=&nbsp;15&nbsp;s the end-effector speed reference is raised
+      to 0.42&nbsp;rad/s. The arm cannot sustain a lead that grows without bound, so the nominal controller
+      stretches it into a singular posture. The proposed controller keeps the four transverse rows, the vehicle speed row
+      and the heading row as equalities and relaxes only the end-effector speed row by a scalar slack
+      \(\delta\). The reduced program is a scalar quadratic program over an interval, solved in closed form.</p>
+    </div>
+      <figure class="figblock">
+        <div class="plate"><img src="figs/W_relaxed.png" alt="" loading="lazy"></div>
+        <figcaption class="cap"><b>Incompatible speed references.</b> Distances to the paths, along-path speeds with their references (gray dotted), second joint angle and arm singularity function with their limits and margin (black dash-dotted) for the proposed controller (solid), the cascade (dashed) and the nominal controller (dotted). The gray vertical line marks the switch at t = 15 s. The nominal run ends at the cross, where it diverges, and the speeds of the cascade leave the plotted range.</figcaption>
+      </figure>
+    <div class="prose">
+      <p>Before the switch no row is active and \(\delta^\star = 0\), so the three controllers coincide. The applied
+      inputs of the nominal controller and the proposed controller are identical to the last digit
+      before the switch, and those of the cascade differ from them by at most 2.4&times;10<sup>-5</sup>, which is the tolerance
+      of its numerical solver.</p>
+      <p>With the proposed controller the singularity row becomes active at t&nbsp;=&nbsp;16.26&nbsp;s and the end-effector
+      speed is relaxed back to the vehicle speed. The largest slack is 1.04&nbsp;rad/s<sup>2</sup>. From then on some
+      row is active at every step, the singularity row at 84&nbsp;% of the steps and the upper limit row of
+      \(\vartheta_2\) at the rest, so the closed loop moves along the constraint boundary. The barrier holds up to a residual of
+      2.8&times;10<sup>-6</sup>&nbsp;m<sup>3</sup> in \(\det J_\rho\), and after t&nbsp;=&nbsp;20&nbsp;s the value of \(\det J_\rho\) stays
+      below 0.00192&nbsp;m<sup>3</sup>, close to \(\epsilon_J = 0.0015\)&nbsp;m<sup>3</sup>. The distance
+      \(d_e\) peaks at 2.8&nbsp;mm during the activation and \(d_c\) at 0.16&nbsp;mm.
+      After t&nbsp;=&nbsp;20&nbsp;s they stay below 0.32&nbsp;mm and 0.04&nbsp;mm.</p>
+      <p>After t&nbsp;=&nbsp;20&nbsp;s the end-effector speed has mean 0.250&nbsp;rad/s and ranges over
+      [0.216, 0.300]&nbsp;rad/s. It oscillates at about 0.34&nbsp;Hz, close to the
+      0.32&nbsp;Hz at which the eight scallops of the end-effector path pass, so the oscillation follows
+      the path geometry and not the sampling. The vehicle speed ranges over [0.236, 0.252]&nbsp;rad/s.
+      Its dip is the sampled-data error of the fast arm motion. The heading error stays below
+      6.2&times;10<sup>-5</sup>&nbsp;rad.</p>
+    </div>
+      <figure class="figblock">
+        <div class="plate"><img src="figs/W_interval.png" alt="" loading="lazy"></div>
+        <figcaption class="cap"><b>The feasible interval of the scalar program.</b> Rows with a positive coefficient on the slack bound it from below and rows with a negative coefficient bound it from above. The applied slack is the point of the interval closest to zero. After the activation the upper end is set by the row of \(\det J_\rho\) or by the upper limit of \(\vartheta_2\), and the lower end by the fold rows of the arm. The interval is at least 11.1 rad/s<sup>2</sup> wide before the switch and at least 2.7 rad/s<sup>2</sup> wide afterwards.</figcaption>
+      </figure>
+      <figure class="figblock">
+        <div class="plate"><img src="figs/W_actuator.png" alt="" loading="lazy"></div>
+        <figcaption class="cap"><b>Inputs of the proposed controller.</b> The thrust \(u_t\) stays within [18.76, 18.85] N after the switch and within [18.53, 19.53] N over the whole run. The largest body moment is 1.01 Nm and the largest joint torque is 0.85 Nm, against the bounds of (3, 3, 1) Nm and 3 Nm.</figcaption>
+      </figure>
+  </section>
+
+  <section class="sec" id="comparison">
+    <div class="sec-head">
+      <span class="sec-tag">Comparison</span>
+      <h2>Against a cascade and the nominal controller</h2>
+      <p>The cascade passes the nominal transverse feedback linearizing input through a safety filter with the same
+      barrier and actuator rows. The filter minimizes the distance to the nominal input with an identity weight, so it may
+      change every row of the linearizing equations, including the transverse rows. The nominal controller has no
+      constraints at all. Gains, barrier poles, limits, initial condition and controller rate are identical across the three.</p>
+    </div>
+    <div class="grid3">
+      <div class="card media"><span class="pill ok">stays on both paths</span><h3>Proposed</h3><div class="plate"><video src="anim/proposed_side.mp4" poster="anim/proposed_side.jpg" autoplay loop muted playsinline preload="metadata" aria-label="proposed controller, side view"></video></div><p>The conflict is absorbed by the end-effector speed alone.</p></div>
+      <div class="card media"><span class="pill warn">leaves both paths</span><h3>TFL + safety filter</h3><div class="plate"><video src="anim/cascade_side.mp4" poster="anim/cascade_side.jpg" autoplay loop muted playsinline preload="metadata" aria-label="safety-filtered cascade, side view"></video></div><p>Nothing pins the transverse rows. The end effector leaves its path by 5 cm within 0.25 s of the activation and the vehicle within 0.70 s.</p></div>
+      <div class="card media"><span class="pill bad">reaches the singular set</span><h3>Nominal TFL</h3><div class="plate"><video src="anim/nominal_switch_side.mp4" poster="anim/nominal_switch_side.jpg" autoplay loop muted playsinline preload="metadata" aria-label="nominal controller, side view"></video></div><p>The arm stretches until \(\det J_\rho\) crosses zero at t = 16.39 s. There the decoupling matrix is singular and the simulation diverges.</p></div>
+    </div>
+      <figure class="figblock">
+        <div class="plate"><img src="figs/W_cascade.png" alt="" loading="lazy"></div>
+        <figcaption class="cap"><b>What the cascade does to the vehicle.</b> Its vehicle speed reverses to -4.2 rad/s at t = 37.7 s, with the thrust at its upper bound of 40 N and the body moments at their bounds. Neither point returns to within 7.4 mm of its path. The proposed controller is drawn for scale.</figcaption>
+      </figure>
+<div class="tablewrap"><table><thead><tr><th>Proposed controller, incompatible-speed run</th><th class="num">400 Hz</th><th class="num">1 kHz</th></tr></thead><tbody><tr><td>Singularity row first active [s]</td><td class="num">16.26</td><td class="num">16.24</td></tr><tr><td>Largest slack \(|\delta^\star|\) [rad/s<sup>2</sup>]</td><td class="num">1.04</td><td class="num">1.04</td></tr><tr><td>Steps with an active row after the activation</td><td class="num">100 %</td><td class="num">100 %</td></tr><tr><td>Share of the singularity row among them</td><td class="num">84 %</td><td class="num">84 %</td></tr><tr><td>Largest \(\epsilon_J - \det J_\rho\) [m<sup>3</sup>]</td><td class="num">2.8&times;10<sup>-6</sup></td><td class="num">1.1&times;10<sup>-6</sup></td></tr><tr><td>Peak \(d_e\) after the switch [mm]</td><td class="num">2.76</td><td class="num">1.11</td></tr><tr><td>Peak \(d_c\) after the switch [mm]</td><td class="num">0.16</td><td class="num">0.07</td></tr><tr><td>\(d_e\) after 20 s [mm]</td><td class="num">&lt; 0.32</td><td class="num">&lt; 0.13</td></tr><tr><td>\(d_c\) after 20 s [mm]</td><td class="num">&lt; 0.04</td><td class="num">&lt; 0.02</td></tr><tr><td>End-effector speed after 20 s, mean [rad/s]</td><td class="num">0.250</td><td class="num">0.250</td></tr><tr><td>End-effector speed after 20 s, range [rad/s]</td><td class="num">[0.216, 0.300]</td><td class="num">[0.215, 0.299]</td></tr><tr><td>Vehicle speed after the switch [rad/s]</td><td class="num">[0.236, 0.252]</td><td class="num">[0.245, 0.251]</td></tr><tr><td>Heading error after 10 s [rad]</td><td class="num">&lt; 6.2&times;10<sup>-5</sup></td><td class="num">&lt; 2.4&times;10<sup>-5</sup></td></tr><tr><td>Thrust after the switch [N]</td><td class="num">[18.76, 18.85]</td><td class="num">[18.76, 18.85]</td></tr><tr><td>Largest body moment [Nm]</td><td class="num">1.01</td><td class="num">1.01</td></tr><tr><td>Largest joint torque [Nm]</td><td class="num">0.85</td><td class="num">0.85</td></tr><tr><td>Feasible interval width, before and after the switch [rad/s<sup>2</sup>]</td><td class="num">&ge; 11.1, &ge; 2.7</td><td class="num">&ge; 11.6, &ge; 2.7</td></tr><tr><td>Steps with an infeasible program</td><td class="num">0</td><td class="num">0</td></tr></tbody></table></div><p class="cap">The 1 kHz run gives the same activation time within 0.02 s, the same largest slack, and residuals smaller by a factor of 2.5. The 1 kHz run is <a href='#rate'>below</a>.</p>
+    <div style="height:1.4rem"></div>
+<div class="tablewrap"><table><thead><tr><th>Safety-filtered cascade</th><th class="num">Value</th></tr></thead><tbody><tr><td>End effector more than 5 cm off its path, after the activation</td><td class="num">0.25 s</td></tr><tr><td>Vehicle more than 5 cm off its path, after the activation</td><td class="num">0.70 s</td></tr><tr><td>Vehicle speed reversal</td><td class="num">-4.2 rad/s at t = 37.7 s</td></tr><tr><td>Largest thrust</td><td class="num">40.0 N (bound 40 N)</td></tr><tr><td>Largest body moments</td><td class="num">(2.67, 3.00, 1.00) Nm (bounds 3, 3, 1 Nm)</td></tr><tr><td>Largest joint torque</td><td class="num">2.70 Nm</td></tr><tr><td>Closest return of the center of mass to its path after leaving</td><td class="num">7.4 mm</td></tr><tr><td>Closest return of the end effector to its path after leaving</td><td class="num">27.3 mm</td></tr><tr><td>Joint limits exceeded by up to</td><td class="num">0.0023 rad</td></tr><tr><td colspan="2"><b>Nominal controller</b></td></tr><tr><td>\(\det J_\rho\) crosses zero at</td><td class="num">16.39 s</td></tr><tr><td>\(\vartheta_3\) at the first sample after the crossing</td><td class="num">-1.42 rad (elbow singularity at -1.38 rad)</td></tr><tr><td>Run ends at</td><td class="num">16.41 s</td></tr></tbody></table></div>
+  </section>
+
+  <section class="sec" id="feasibility">
+    <div class="sec-head">
+      <span class="sec-tag">Feasibility</span>
+      <h2>Feasibility margins</h2>
+      <p>The reduced program is feasible exactly when every row with a zero coefficient on the slack holds at the
+      nominal input and the largest lower bound does not exceed the smallest upper bound. One pass through the
+      25 rows gives this test and the interval. The six vehicle rows, four attitude rows and two thrust rows, have a
+      zero coefficient on the slack, because the slack acts through the arm only.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n">&ge; 11 rad/s<sup>2</sup></div>
+        <div class="k">width of the feasible interval before the switch</div></div>
+      <div class="stat"><div class="n">&ge; 2.7 rad/s<sup>2</sup></div>
+        <div class="k">width after the switch, 2.6 times the largest slack, at its narrowest at t = 26.0 s</div></div>
+      <div class="stat"><div class="n">&ge; 142 rad/s<sup>2</sup></div>
+        <div class="k">margin of the four attitude rows at the nominal input, over the run</div></div>
+      <div class="stat"><div class="n">&ge; 1652 N/s<sup>2</sup></div>
+        <div class="k">margin of the two thrust rows at the nominal input, over the run</div></div>
+    </div>
+    <div class="prose">
+      <p>The attitude margin is the smallest value of \(-\bar b_i\) over the six vehicle rows logged at every step. The
+      thrust margin is rebuilt from the logged thrust, its rate and the applied thrust input, since the slack leaves
+      the thrust input unchanged. On the nominal motion of the posture study below, the same margins are
+      146&nbsp;rad/s<sup>2</sup> and 1676&nbsp;N/s<sup>2</sup>,
+      and the coefficient of the slack in the vehicle rows is at most 7.5&times;10<sup>-15</sup>.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="postures">
+    <div class="sec-head">
+      <span class="sec-tag">Postures</span>
+      <h2>Postures compatible with both paths</h2>
+      <p>On the dual path-following manifold the posture of the arm is a function of the vehicle path coordinate
+      \(a_c\) and of the lead \(a_e - a_c\) of the end effector along the circle. The arm reaches only a bounded set
+      of end-effector positions relative to the center of mass, so only an interval of leads is admissible at each
+      \(a_c\). Two studies map this interval and test strict feasibility on it.</p>
+    </div>
+      <figure class="figblock">
+        <div class="plate"><img src="figs/W_window.png" alt="" loading="lazy"></div>
+        <figcaption class="cap"><b>Admissible lead window.</b> At 144 positions on the vehicle path the lead is traced on a 0.0025 rad grid along the inverse-kinematics branch of the runs. A lead is admissible when the joints are inside their limits and \(\det J_\rho \ge \epsilon_J\). The window is 0.13 to 0.16 rad wide, 15 to 20 cm of arc. Its lower end, 0.09 to 0.15 rad, is set by a joint limit at every position. Its upper end, 0.23 to 0.30 rad, is set by \(\det J_\rho = \epsilon_J\) at 122 positions and by the upper limit of \(\vartheta_2\) at 22. After the switch the run rides the upper end: its lead minus the upper end lies in [0.0001, 0.0025] rad after 20 s, within one grid step.</figcaption>
+      </figure>
+      <figure class="figblock">
+        <div class="plate"><img src="figs/W_sampling.png" alt="" loading="lazy"></div>
+        <figcaption class="cap"><b>Feasibility sampling.</b> States on the manifold with every transverse coordinate, speed error and heading error equal to zero (residual at most 2.7&times;10<sup>-12</sup>), at 24 positions, 30 leads from 0.05 to 0.29 rad and 7 end-effector speeds, 3248 states in all. Of the 1430 states in the admissible set of every barrier, 142 are not strictly feasible: 92 at an end-effector speed of &minus;0.5 rad/s, 34 at 1.0 rad/s and 16 at 1.5 rad/s, and none at 0, 0.25, 0.42 and 0.6 rad/s. The speed reference does not enter this test, because it shifts the nominal input along the slack direction and moves the interval without changing its width.</figcaption>
+      </figure>
+<div class="tablewrap"><table><thead><tr><th>Singular postures of the arm (from the multibody model)</th><th class="num">Value</th></tr></thead><tbody><tr><td>Elbow angle \(\vartheta_3^*\) with \(\det J_\rho = 0\) for every \(\vartheta_2\)</td><td class="num">-1.38 rad (spread over three values of \(\vartheta_2\): 7.7&times;10<sup>-13</sup>)</td></tr><tr><td>Distance of the elbow limit -1.3 rad to this singularity</td><td class="num">0.08 rad</td></tr><tr><td>Shoulder angle with \(\bar\rho_x = 0\) at \(\vartheta_3 = 0.1\) rad</td><td class="num">-1.27 rad, inside the joint box</td></tr><tr><td>Airframe mass and mass of the combined system</td><td class="num">1.325 kg and 1.917 kg</td></tr><tr><td>Offset of the center of mass from the body origin, incompatible-speed run</td><td class="num">1.2 to 5.6 cm</td></tr></tbody></table></div>
+  </section>
+
+  <section class="sec" id="rate">
+    <div class="sec-head">
+      <span class="sec-tag">Rate</span>
+      <h2>Controller rate</h2>
+      <p>The controller runs at 400&nbsp;Hz with a zero-order hold on the body-frame command, and the plant is
+      integrated at 4&nbsp;kHz with a third-order Runge&ndash;Kutta scheme. The runs are therefore sampled
+      approximations of the continuous-time controller. The same incompatible-speed run at 1&nbsp;kHz shows what the
+      sampling costs.</p>
+    </div>
+      <figure class="figblock">
+        <div class="plate"><img src="figs/W_rate.png" alt="" loading="lazy"></div>
+        <figcaption class="cap"><b>400 Hz against 1 kHz.</b> Distances to the paths, the applied slack and the violation of the singularity margin. The activation time moves by 0.02 s, the largest slack is unchanged at 1.04 rad/s<sup>2</sup>, and the peak distances and the barrier residual shrink by a factor of 2.5. The vehicle speed stays within [0.245, 0.251] rad/s at 1 kHz.</figcaption>
+      </figure>
+  </section>
+
+  <section class="sec" id="mismatch">
+    <div class="sec-head">
+      <span class="sec-tag">Mismatch</span>
+      <h2>Model mismatch</h2>
+      <p>The controller computes the drift of every row from the model, so a model error moves the closed loop off the
+      paths. In these runs the masses and inertias of the simulated plant are scaled while the controller keeps the
+      nominal model. The incompatible-speed scenario is unchanged.</p>
+    </div>
+      <figure class="figblock">
+        <div class="plate"><img src="figs/W_mismatch.png" alt="" loading="lazy"></div>
+        <figcaption class="cap"><b>Model mismatch.</b> Distances of the center of mass and of the end effector to their paths and the shoulder angle with its limits, for the exact model, the arm masses and inertias 2 % above their model values, and the airframe mass 5 % above its model value. Bottom right: the two cases that diverge, the arm 5 % and the airframe 10 % above their model values.</figcaption>
+      </figure>
+<div class="tablewrap"><table><thead><tr><th>Plant scaled against the model</th><th class="num">Arm +2 %</th><th class="num">Airframe +5 %</th><th class="num">Arm +5 %</th><th class="num">Airframe +10 %</th></tr></thead><tbody><tr><td>Run length [s]</td><td class="num">40.0</td><td class="num">40.0</td><td class="num">4.1 (diverges)</td><td class="num">2.2 (diverges)</td></tr><tr><td>Program feasible at every step</td><td class="num">yes</td><td class="num">no</td><td class="num">no</td><td class="num">no</td></tr><tr><td>First infeasible step [s]</td><td class="num">n/a</td><td class="num">16.27</td><td class="num">1.74</td><td class="num">0.78</td></tr><tr><td>Share of infeasible steps after the switch</td><td class="num">0 %</td><td class="num">64 %</td><td class="num">n/a</td><td class="num">n/a</td></tr><tr><td>Largest \(\epsilon_J - \det J_\rho\) [m<sup>3</sup>]</td><td class="num">2.0&times;10<sup>-5</sup></td><td class="num">6.9&times;10<sup>-4</sup></td><td class="num">0.003</td><td class="num">0.003</td></tr><tr><td>Joint limits exceeded by up to [rad]</td><td class="num">0</td><td class="num">0.36</td><td class="num">3.9</td><td class="num">diverges</td></tr><tr><td>\(d_c\) after 20 s [cm]</td><td class="num">[4.0, 4.1]</td><td class="num">[22.6, 22.6]</td><td class="num">n/a</td><td class="num">n/a</td></tr><tr><td>\(d_e\) after 20 s [cm]</td><td class="num">[8.1, 9.2]</td><td class="num">[0.00, 0.19]</td><td class="num">n/a</td><td class="num">n/a</td></tr><tr><td>\(d_e\) between 10 and 15 s [cm]</td><td class="num">[10.4, 10.8]</td><td class="num">[0.79, 3.75]</td><td class="num">n/a</td><td class="num">n/a</td></tr><tr><td>Peak \(d_e\) after the switch [cm]</td><td class="num">12.5</td><td class="num">0.9</td><td class="num">n/a</td><td class="num">n/a</td></tr><tr><td>Largest vehicle speed error after 10 s [rad/s]</td><td class="num">0.10</td><td class="num">0.35</td><td class="num">n/a</td><td class="num">n/a</td></tr></tbody></table></div><p class="cap">With the arm 2 % heavier the run stays feasible and the barriers hold, but the center of mass settles 4 cm off its path. The end effector settles 10 to 11 cm off its path before the switch and 8 to 9 cm after 20 s, with a peak of 12.5 cm after the switch. With the airframe 5 % heavier the program becomes infeasible after the switch, the fallback takes over and the joint limits are exceeded by up to 0.36 rad. The two larger errors make the run diverge within the initial transient, before the switch. Hardware will therefore need integral action or an estimate of the acceleration of the center of mass.</p>
+  </section>
+
+  <section class="sec" id="parameters">
+    <div class="sec-head">
+      <span class="sec-tag">Parameters</span>
+      <h2>Every parameter, for all three controllers</h2>
+      <p>The comparison is only worth reading if the three controllers were given the same problem.
+      These are the complete settings behind every figure on this page.</p>
+    </div>
+    <h3 style="margin:1.6rem 0 .7rem">Plant and scenario</h3><div class="tablewrap"><table><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody><tr><td>Platform</td><td>Skydio X2 airframe (MuJoCo Menagerie inertial data) with an OpenMANIPULATOR-X arm (ROBOTIS description file), wrist fixed, mounted upside down below the airframe</td></tr><tr><td>Masses</td><td>airframe 1.325 kg, combined system 1.917 kg</td></tr><tr><td>Engine</td><td>Drake MultibodyPlant, continuous, third-order Runge&ndash;Kutta at 4 kHz (fixed step 0.25 ms)</td></tr><tr><td>Controller rate</td><td>400 Hz, zero-order hold on the body-frame command, thrust chain integrated exactly between updates</td></tr><tr><td>Gravity</td><td>9.81 m/s<sup>2</sup></td></tr><tr><td>Vehicle path</td><td>x<sup>2</sup> + y<sup>2</sup> = 1.2<sup>2</sup>, z = 1.6 + 0.1 sin 2&lambda;, path coordinate &lambda; = atan2(y, x)</td></tr><tr><td>End-effector path</td><td>same circle, z = 1.42 + 0.06 sin(2&lambda; + 0.8) + 0.03 sin 8&lambda;</td></tr><tr><td>Heading reference</td><td>&psi;<sub>des</sub> = &lambda; + &pi;/2, the tangent direction, with the error wrapped to (&minus;&pi;, &pi;]</td></tr><tr><td>Speed references</td><td>v<sub>c</sub> = v<sub>e</sub> = 0.25 rad/s (0.3 m/s). Incompatible-speed run: v<sub>e</sub> = 0.42 rad/s from t = 15 s</td></tr><tr><td>Start</td><td>center of mass 0.4 m outside and 0.25 m below the vehicle path at &lambda; = 0, moving at 0.3 m/s along the circle, heading error 0.35 rad, level attitude, hover thrust, end effector at its on-path lead of 0.183 rad plus a 5 cm radial and 4 cm vertical perturbation</td></tr><tr><td>Horizon</td><td>28 s (nominal run), 40 s (incompatible-speed runs)</td></tr></tbody></table></div><h3 style="margin:1.6rem 0 .7rem">Proposed controller</h3><div class="tablewrap"><table><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody><tr><td>Transverse gains k<sub>&xi;</sub> = k<sub>&zeta;</sub></td><td>(81, 108, 54, 12), quadruple pole at &minus;3</td></tr><tr><td>End-effector transverse gains k<sub>&chi;</sub> = k<sub>&sigma;</sub></td><td>(2.25, 3.00), double pole at &minus;1.5</td></tr><tr><td>Vehicle speed gains k<sub>&eta;</sub></td><td>(8, 12, 6), triple pole at &minus;2</td></tr><tr><td>End-effector speed gain k<sub>&varsigma;</sub></td><td>1, pole at &minus;1</td></tr><tr><td>Heading gains k<sub>&mu;</sub></td><td>(9, 6), double pole at &minus;3</td></tr><tr><td>ECBF gains (k<sub>1</sub>, k<sub>2</sub>)</td><td>(100, 20), double pole at &minus;10 for every barrier</td></tr><tr><td>Joint limits [rad]</td><td>&vartheta;<sub>1</sub> &isin; [-1.5, 1.5], &vartheta;<sub>2</sub> &isin; [-1.3, 1.3], &vartheta;<sub>3</sub> &isin; [-1.3, 1.2] (the simulated plant does not enforce them)</td></tr><tr><td>Attitude margin</td><td>|&phi;|, |&theta;| &le; &pi;/2 &minus; 0.1 rad</td></tr><tr><td>Thrust bounds</td><td>2 N &le; u<sub>t</sub> &le; 40 N</td></tr><tr><td>Actuator bounds</td><td>|&tau;| &le; (3, 3, 1) Nm, |&tau;<sub>&vartheta;</sub>| &le; 3 Nm, as box rows on the input</td></tr><tr><td>Singularity margin</td><td>det J<sub>&rho;</sub> &ge; &epsilon;<sub>J</sub> = 0.0015 m<sup>3</sup></td></tr><tr><td>Rows</td><td>25: six joint, four attitude, two thrust and one singularity ECBF rows, twelve actuator box rows</td></tr><tr><td>Objective and solve</td><td>&frac12;&delta;<sup>2</sup> over the scalar slack of the end-effector speed row, interval test and closed-form clipping, no numerical solver in the loop</td></tr><tr><td>Fallback</td><td>if the interval is empty, the nominal input with both speed references set to zero (never reached with the exact model)</td></tr><tr><td>Model knowledge</td><td>det J<sub>&rho;</sub>, inertia matrix, bias forces and Jacobians from the multibody model, exact</td></tr></tbody></table></div><h3 style="margin:1.6rem 0 .7rem">TFL with a safety filter (cascade)</h3><div class="tablewrap"><table><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody><tr><td>Nominal feedback</td><td>the same transverse feedback linearizing input</td></tr><tr><td>Filter</td><td>min &frac12;&#8214;u &minus; u<sub>TFL</sub>&#8214;<sup>2</sup> subject to the same 25 rows, identity weight</td></tr><tr><td>Solve</td><td>CLARABEL through cvxpy</td></tr><tr><td>Difference from the proposed controller</td><td>every row of D(x)u = v(x) may change, so the transverse rows are not pinned</td></tr></tbody></table></div><h3 style="margin:1.6rem 0 .7rem">Nominal controller</h3><div class="tablewrap"><table><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody><tr><td>Feedback</td><td>u = D(x)<sup>&minus;1</sup> v(x), no constraints</td></tr></tbody></table></div>
+  </section>
+
+  <section class="sec" id="reproduce">
+    <div class="sec-head">
+      <span class="sec-tag">Reproduce</span>
+      <h2>Reproducing this</h2>
+      <p>The simulation code is in the repository under <code>sim/</code>. The verification gate runs first. It checks
+      the symbolic model against energy conservation, the center-of-mass identity and a Drake cross-check, and the
+      closed form of the decoupling matrix determinant against direct evaluation at random states.</p>
+    </div>
+<pre><code><span class="c"># set up and verify</span>
+git clone https://github.com/gradslab/am_dual_pf-.git
+cd am_dual_pf/sim
+pip install -r requirements.txt
+python3 model/verify_model.py
+python3 model/test_relative_degree.py
+
+<span class="c"># the runs behind every number and figure</span>
+python3 drake/sim_drake.py D3
+python3 drake/sim_drake.py D4 --modes relaxed,filter,nominal
+python3 drake/sim_drake.py D4 --modes relaxed --hz 1000 --tag _1khz
+python3 drake/sim_drake.py D5 --arm-scale 1.02 --tag _a102
+python3 drake/sim_drake.py D5 --veh-scale 1.05 --tag _v105
+python3 drake/sim_drake.py D5 --arm-scale 1.05 --T 12 --tag _a105
+python3 drake/sim_drake.py D5 --veh-scale 1.10 --T 12 --tag _v110
+
+<span class="c"># the posture study, the numbers and the figures</span>
+python3 studies/posture_study.py
+python3 metrics.py
+python3 paper_figures.py
+python3 web/figs_web.py
+
+<span class="c"># animations (Drake VTK renderer and ffmpeg), then the page</span>
+for s in "D4_relaxed side" "D4_relaxed orbit" "D3_nominal orbit" "D3_nominal side" \
+         "D4_filter side" "D4_filter orbit" "D4_nominal side"; do
+  set -- $s; python3 drake/render_drake.py $1 --cam $2
+done
+python3 web/anim_web.py
+python3 web/page_numbers.py
+python3 web/build_page.py</code></pre>
+  </section>
+
+  <section class="sec" id="cite">
+    <div class="sec-head">
+      <span class="sec-tag">Citation</span>
+      <h2>Citation</h2>
+    </div>
+<pre><code>@unpublished{tariq2026dual,
+  author = {Hamza Tariq and Adeel Akhtar},
+  title  = {Dual Path Following for an Aerial Manipulator Under State and
+            Input Constraints via Transverse Feedback Linearization},
+  note   = {Submitted to the European Control Conference},
+  year   = {2026}
+}</code></pre>
+  </section>
+
+  <footer>
+    <div class="rulebar"></div>
+    <p>GRaDS Lab, New Jersey Institute of Technology.
+      Every figure and number on this page is generated by the scripts above.
+      <a href="https://github.com/gradslab/am_dual_pf-">Repository</a>.</p>
+  </footer>
+
+  </main>
+</div>
+<script src="assets/js/site.js"></script>
+</body>
+</html>

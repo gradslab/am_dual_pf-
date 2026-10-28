@@ -1,0 +1,118 @@
+{
+ "singular": {
+  "th3_star": -1.3824229077801988,
+  "th3_star_spread": 7.711609129046337e-13,
+  "th2_rho_x_zero_at_th3_0p1": -1.2663861943156043,
+  "elbow_limit_to_singularity": 0.08242290778019878,
+  "airframe_mass": 1.325,
+  "total_mass": 1.917057319
+ },
+ "sampling": {
+  "positions": 24,
+  "leads": 30,
+  "lead_range": [
+   0.05,
+   0.29000000000000004
+  ],
+  "speeds": [
+   -0.5,
+   0.0,
+   0.25,
+   0.42,
+   0.6,
+   1.0,
+   1.5
+  ],
+  "n_states": 3248,
+  "max_z_residual": 2.6888491433396666e-12,
+  "n_in_admissible_set": 1430,
+  "n_not_strictly_feasible": 142,
+  "max_zero_coefficient_vehicle_rows": 7.494575735104345e-15,
+  "vehicle_row_margin_attitude": 146.3131732793458,
+  "vehicle_row_margin_thrust": 1675.9076690170932,
+  "per_speed": {
+   "-0.5": {
+    "states": 464,
+    "in_admissible_set": 118,
+    "not_strictly_feasible": 92,
+    "infeasible": 92
+   },
+   "0.0": {
+    "states": 464,
+    "in_admissible_set": 234,
+    "not_strictly_feasible": 0,
+    "infeasible": 0
+   },
+   "0.25": {
+    "states": 464,
+    "in_admissible_set": 272,
+    "not_strictly_feasible": 0,
+    "infeasible": 0
+   },
+   "0.42": {
+    "states": 464,
+    "in_admissible_set": 256,
+    "not_strictly_feasible": 0,
+    "infeasible": 0
+   },
+   "0.6": {
+    "states": 464,
+    "in_admissible_set": 238,
+    "not_strictly_feasible": 0,
+    "infeasible": 0
+   },
+   "1.0": {
+    "states": 464,
+    "in_admissible_set": 198,
+    "not_strictly_feasible": 34,
+    "infeasible": 34
+   },
+   "1.5": {
+    "states": 464,
+    "in_admissible_set": 114,
+    "not_strictly_feasible": 16,
+    "infeasible": 16
+   }
+  }
+ },
+ "window": {
+  "positions": 144,
+  "grid_step": 0.0025,
+  "start_lead": 0.18249999999998334,
+  "width_range": [
+   0.12749999999999728,
+   0.16499999999999648
+  ],
+  "arc_length_cm": [
+   15.299999999999674,
+   19.799999999999578
+  ],
+  "lower_end_range": [
+   0.09249999999998526,
+   0.1474999999999841
+  ],
+  "upper_end_range": [
+   0.23249999999998228,
+   0.2974999999999809
+  ],
+  "lower_end_reason": {
+   "joint limit": 144
+  },
+  "upper_end_reason": {
+   "joint limit": 22,
+   "det J below eps_J": 122
+  },
+  "detJ_at_upper_end": [
+   0.0015970310320875176,
+   0.002709496969262023
+  ],
+  "run_lead_minus_upper_end_after_20s": [
+   7.918931417216779e-05,
+   0.0024653967880302607
+  ],
+  "run_lead_after_20s": [
+   0.23308904444666023,
+   0.29795633972489455
+  ]
+ }
+}

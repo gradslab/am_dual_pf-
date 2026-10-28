@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+assets/aerial_manipulator_drake.urdf
+sim/model/am_primitive.urdf
+sim/results/*_meshcat.html
+sim/results/*_regen.npz
+sim/results/*_regen_active.json
+sim/results/checker_ground.png
