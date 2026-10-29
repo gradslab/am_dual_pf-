@@ -36,7 +36,7 @@ by hand.
   author = {Hamza Tariq and Adeel Akhtar},
   title  = {Dual Path Following for an Aerial Manipulator Under State and
             Input Constraints via Transverse Feedback Linearization},
-  note   = {Submitted to the European Control Conference},
+  note   = {Under review},
   year   = {2026}
 }
 ```

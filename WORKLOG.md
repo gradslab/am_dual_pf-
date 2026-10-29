@@ -1,6 +1,6 @@
 # WORKLOG
 
-Repository for the ECC paper "Dual Path Following for an Aerial Manipulator Under State and Input
+Repository for the paper "Dual Path Following for an Aerial Manipulator Under State and Input
 Constraints via Transverse Feedback Linearization" (Hamza Tariq, Adeel Akhtar, GRaDS Lab, NJIT).
 
 Repo path: /Users/hamzamalik/Downloads/Aerial Manipulation TFL/am_dual_pf
@@ -93,7 +93,7 @@ Scratch logs of the runs: /private/tmp/claude-501/-Users-hamzamalik-Downloads-Ae
 ## Open items for a human
 - The repository URL (https://github.com/gradslab/am_dual_pf-) and the project page URL (https://gradslab.github.io/am_dual_pf-/)
   are placeholders chosen to match the previous repo's naming. The paper's PROJECT-PAGE-URL-TODO must be filled with the real one.
-- The bibtex key and note ("Submitted to the European Control Conference") are a guess; adjust once the paper is accepted.
+- The bibtex note is "Under review"; update it once the paper is accepted.
 - The cascade animations show the vehicle leaving the field of view after it leaves its path (it ends 6.8 m away). Intended, but worth a look.
 - The window study names the theta_2 upper limit as the upper end at 22 of 144 positions, which the paper does not mention
   (the paper says det J = eps_J sets the upper end at grid resolution). The closed loop is consistent with both (th2+ active at 16 % of the steps).
