@@ -17,6 +17,11 @@ def f(x, spec=".2f", dash="n/a"):
     return dash if x is None else format(x, spec)
 
 
+def lb(x, d=1, dash="n/a"):
+    """lower bound rounded down, so a quoted minimum never exceeds the data"""
+    return dash if x is None else format(math.floor(x * 10 ** d) / 10 ** d, f".{d}f")
+
+
 def sig(x, n=2, dash="n/a"):
     """2.9e-05 becomes 2.9 x 10^-5, 0.0021 stays decimal"""
     if x is None:
@@ -256,7 +261,7 @@ window.MathJax = {{tex:{{inlineMath:[["\\\\(","\\\\)"]]}}, svg:{{fontCache:"glob
       Its dip is the sampled-data error of the fast arm motion. The heading error stays below
       {sig(pr["heading_err_after_10s"], 1)}&nbsp;rad.</p>
     </div>
-{figure("figs/W_interval.png", f"<b>The feasible interval of the scalar program.</b> Rows with a positive coefficient on the slack bound it from below and rows with a negative coefficient bound it from above. The applied slack is the point of the interval closest to zero. After the activation the upper end is set by the row of \\(\\det J_\\rho\\) or by the upper limit of \\(\\vartheta_2\\), and the lower end by the fold rows of the arm. The interval is at least {f(pr['int_width_before_switch'], '.1f')} rad/s<sup>2</sup> wide before the switch and at least {f(pr['int_width_after_switch'], '.1f')} rad/s<sup>2</sup> wide afterwards.")}
+{figure("figs/W_interval.png", f"<b>The feasible interval of the scalar program.</b> Rows with a positive coefficient on the slack bound it from below and rows with a negative coefficient bound it from above. The applied slack is the point of the interval closest to zero. After the activation the upper end is set by the row of \\(\\det J_\\rho\\) or by the upper limit of \\(\\vartheta_2\\), and the lower end by the fold rows of the arm. The interval is at least {lb(pr['int_width_before_switch'])} rad/s<sup>2</sup> wide before the switch and at least {lb(pr['int_width_after_switch'])} rad/s<sup>2</sup> wide afterwards.")}
 {figure("figs/W_actuator.png", f"<b>Inputs of the proposed controller.</b> The thrust \\(u_t\\) stays within {rng(pr['thrust_after_switch'], '.2f')} N after the switch and within {rng(pr['thrust_whole_run'], '.2f')} N over the whole run. The largest body moment is {f(pr['max_moment'])} Nm and the largest joint torque is {f(pr['max_joint_torque'])} Nm, against the bounds of ({', '.join(f(v, '.0f') for v in P['tau_max'])}) Nm and {f(P['tauj_max'][0], '.0f')} Nm.")}
   </section>
 '''
@@ -278,7 +283,7 @@ window.MathJax = {{tex:{{inlineMath:[["\\\\(","\\\\)"]]}}, svg:{{fontCache:"glob
         ("Thrust after the switch [N]", rng(pr["thrust_after_switch"], ".2f"), rng(pk["thrust_after_switch"], ".2f")),
         ("Largest body moment [Nm]", f(pr["max_moment"]), f(pk["max_moment"])),
         ("Largest joint torque [Nm]", f(pr["max_joint_torque"]), f(pk["max_joint_torque"])),
-        ("Feasible interval width, before and after the switch [rad/s<sup>2</sup>]", f"&ge; {f(pr['int_width_before_switch'], '.1f')}, &ge; {f(pr['int_width_after_switch'], '.1f')}", f"&ge; {f(pk['int_width_before_switch'], '.1f')}, &ge; {f(pk['int_width_after_switch'], '.1f')}"),
+        ("Feasible interval width, before and after the switch [rad/s<sup>2</sup>]", f"&ge; {lb(pr['int_width_before_switch'])}, &ge; {lb(pr['int_width_after_switch'])}", f"&ge; {lb(pk['int_width_before_switch'])}, &ge; {lb(pk['int_width_after_switch'])}"),
         ("Steps with an infeasible program", "0" if pr["feasible_all"] else "some", "0" if pk["feasible_all"] else "some"),
     ]
     comparison = f'''
@@ -328,9 +333,9 @@ window.MathJax = {{tex:{{inlineMath:[["\\\\(","\\\\)"]]}}, svg:{{fontCache:"glob
       zero coefficient on the slack, because the slack acts through the arm only.</p>
     </div>
     <div class="stats">
-      <div class="stat"><div class="n">&ge; {f(pr["int_width_before_switch"], ".0f")} rad/s<sup>2</sup></div>
+      <div class="stat"><div class="n">&ge; {lb(pr["int_width_before_switch"], 0)} rad/s<sup>2</sup></div>
         <div class="k">width of the feasible interval before the switch</div></div>
-      <div class="stat"><div class="n">&ge; {f(pr["int_width_after_switch"], ".1f")} rad/s<sup>2</sup></div>
+      <div class="stat"><div class="n">&ge; {lb(pr["int_width_after_switch"])} rad/s<sup>2</sup></div>
         <div class="k">width after the switch, {f(pr["int_width_over_slack"], ".1f")} times the largest slack, at its narrowest at t = {f(pr["t_int_width_min"], ".1f")} s</div></div>
       <div class="stat"><div class="n">&ge; {f(pr["attitude_row_margin"], ".0f")} rad/s<sup>2</sup></div>
         <div class="k">margin of the four attitude rows at the nominal input, over the run</div></div>
